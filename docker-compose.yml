@@ -1,5 +1,3 @@
-version: '3.8'
-
 x-env-keys: &env_key_vars
   ACCESS_KEY: my-access-key
   SECRET_KEY: my-secret-key
@@ -21,13 +19,17 @@ services:
       - 5000:3000
     networks:
       - comlink
-
+    healthcheck:
+      test: ["CMD", "/swgoh-comlink", "--check"]
+      start_period: 10s
+      start_interval: 0.5s
   swgoh-stats:
     container_name: swgoh-stats
     image: ghcr.io/swgoh-utils/swgoh-stats:latest
     restart: always
     depends_on:
-      - swgoh-comlink
+       swgoh-comlink:
+        condition: service_healthy
     environment:
       # combine multiple sets of values as defaults using yaml anchors
       <<: [*env_key_vars, *env_client_url]
